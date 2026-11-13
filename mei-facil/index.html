@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MEI Fácil</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14213d;--mut:#667085;--line:#e4e7ec;--pri:#0b7a4b;--pri2:#e6f4ec;--warn:#b54708;--warn2:#fef0c7;--bad:#b42318;--bad2:#fee4e2}
+@media (prefers-color-scheme:dark){:root{--bg:#10151c;--card:#19212b;--ink:#eef2f6;--mut:#9aa7b5;--line:#2a3541;--pri:#3ddc97;--pri2:#16322a;--warn:#fdb022;--warn2:#3a2e0e;--bad:#f97066;--bad2:#3b1714}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0 2px}h2{font-size:17px;margin:0 0 10px}
+.sub{color:var(--mut);margin:0 0 14px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+nav{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto}
+nav button{flex:1;white-space:nowrap}
+button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
+button.on,button.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+button.sm{padding:4px 10px;font-size:13px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.big{font-size:28px;font-weight:700}
+.bar{height:14px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0 6px}
+.bar>i{display:block;height:100%;background:var(--pri);width:0}
+.bar.warn>i{background:var(--warn)}.bar.bad>i{background:var(--bad)}
+.alert{padding:10px 12px;border-radius:10px;margin-top:10px;font-size:14px}
+.alert.ok{background:var(--pri2);color:var(--pri)}.alert.warn{background:var(--warn2);color:var(--warn)}.alert.bad{background:var(--bad2);color:var(--bad)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.k{font-size:13px;color:var(--mut)}.v{font-size:18px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:8px 4px;border-bottom:1px solid var(--line);text-align:left}
+td.r,th.r{text-align:right}.in{color:var(--pri)}.out{color:var(--bad)}
+.das{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);gap:8px}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px}
+.tag.late{background:var(--bad2);color:var(--bad)}.tag.soon{background:var(--warn2);color:var(--warn)}.tag.okk{background:var(--pri2);color:var(--pri)}
+.hide{display:none}
+.note{font-size:12px;color:var(--mut);margin-top:8px}
+#recibo-out{background:#fff;color:#000;border:1px solid #ccc;border-radius:8px;padding:24px;margin-top:12px}
+@media print{body *{visibility:hidden}#recibo-out,#recibo-out *{visibility:visible}#recibo-out{position:absolute;left:0;top:0;width:100%;border:0}}
+</style>
+</head>
+<body>
+<main>
+<h1>MEI Fácil</h1>
+<p class="sub">Controle de faturamento, DAS e recibos para quem acabou de abrir o MEI. Seus dados ficam só neste aparelho.</p>
+
+<section id="setup" class="card hide">
+  <h2>Vamos começar</h2>
+  <label for="s-nome">Nome ou nome do negócio</label><input id="s-nome" placeholder="Ex.: Maria Pinturas">
+  <label for="s-doc">CNPJ (opcional)</label><input id="s-doc" inputmode="numeric" placeholder="00.000.000/0000-00">
+  <label for="s-ativ">O que você faz?</label>
+  <select id="s-ativ"><option value="servico">Presto serviços</option><option value="comercio">Vendo produtos (comércio/indústria)</option><option value="ambos">Os dois</option></select>
+  <label for="s-abertura">Data de abertura do MEI</label><input id="s-abertura" type="date">
+  <p><button class="pri" id="s-ok">Começar</button></p>
+</section>
+
+<div id="app" class="hide">
+<nav id="tabs">
+  <button data-t="resumo" class="on">Resumo</button>
+  <button data-t="lanc">Lançamentos</button>
+  <button data-t="das">DAS e prazos</button>
+  <button data-t="rec">Recibo</button>
+</nav>
+
+<section data-p="resumo">
+  <div class="card">
+    <div class="k">Faturamento no ano <span id="r-ano"></span></div>
+    <div class="big" id="r-fat">R$ 0,00</div>
+    <div class="bar" id="r-bar"><i></i></div>
+    <div class="k" id="r-lim"></div>
+    <div id="r-alert"></div>
+  </div>
+  <div class="card grid">
+    <div><div class="k">Receitas do mês</div><div class="v in" id="r-mrec">R$ 0,00</div></div>
+    <div><div class="k">Despesas do mês</div><div class="v out" id="r-mdes">R$ 0,00</div></div>
+    <div><div class="k">Sobra do mês</div><div class="v" id="r-msob">R$ 0,00</div></div>
+    <div><div class="k">Média mensal no ano</div><div class="v" id="r-med">R$ 0,00</div></div>
+  </div>
+  <div class="card"><h2>Próximo compromisso</h2><div id="r-prox"></div></div>
+  <p class="note"><button class="sm" id="reset">Apagar todos os dados</button> <button class="sm" id="edit">Editar meu cadastro</button></p>
+</section>
+
+<section data-p="lanc" class="hide">
+  <div class="card">
+    <h2>Novo lançamento</h2>
+    <div class="row">
+      <div><label for="l-tipo">Tipo</label><select id="l-tipo"><option value="rec">Receita (entrou)</option><option value="des">Despesa (saiu)</option></select></div>
+      <div><label for="l-data">Data</label><input id="l-data" type="date"></div>
+    </div>
+    <label for="l-val">Valor (R$)</label><input id="l-val" inputmode="decimal" placeholder="0,00">
+    <label for="l-desc">Descrição / cliente</label><input id="l-desc" placeholder="Ex.: Pintura sala – João">
+    <p><button class="pri" id="l-add">Adicionar</button></p>
+  </div>
+  <div class="card">
+    <h2>Histórico</h2>
+    <table id="l-tab"></table>
+    <p class="note"><button class="sm" id="l-csv">Baixar planilha (CSV)</button></p>
+  </div>
+</section>
+
+<section data-p="das" class="hide">
+  <div class="card"><h2>DAS mensal</h2>
+    <p class="sub" id="d-info"></p>
+    <div id="d-list"></div>
+    <p class="note">Pague pelo app do MEI, pelo <a href="https://www8.receita.fazenda.gov.br/simplesnacional/aplicacoes/atspo/pgmei.app/identificacao" target="_blank" rel="noopener">PGMEI</a> ou no seu banco. Marcar aqui é só para seu controle.</p>
+  </div>
+  <div class="card"><h2>Declaração anual (DASN-SIMEI)</h2><div id="d-dasn"></div>
+    <p class="note">Entrega pelo <a href="https://www8.receita.fazenda.gov.br/simplesnacional/aplicacoes/atspo/dasnsimei.app/Identificacao" target="_blank" rel="noopener">portal do Simples Nacional</a>. A multa por atraso começa em R$ 50.</p></div>
+  <div class="card"><h2>Nota fiscal</h2>
+    <p class="sub">Quem presta serviço emite pelo Emissor Nacional (<a href="https://www.nfse.gov.br" target="_blank" rel="noopener">nfse.gov.br</a>) com login gov.br. Venda de produtos segue as regras da Sefaz do seu estado. Confirme a obrigatoriedade para o seu caso com a prefeitura ou um contador.</p></div>
+</section>
+
+<section data-p="rec" class="hide">
+  <div class="card">
+    <h2>Gerar recibo ou orçamento</h2>
+    <div class="row">
+      <div><label for="c-tipo">Documento</label><select id="c-tipo"><option>Recibo</option><option>Orçamento</option></select></div>
+      <div><label for="c-val">Valor (R$)</label><input id="c-val" inputmode="decimal"></div>
+    </div>
+    <label for="c-cli">Nome do cliente</label><input id="c-cli">
+    <label for="c-desc">Descrição do serviço/produto</label><textarea id="c-desc" rows="3"></textarea>
+    <p><button class="pri" id="c-gen">Gerar</button> <button id="c-print" class="hide">Imprimir / salvar PDF</button> <button id="c-reg" class="hide">Lançar como receita</button></p>
+    <div id="recibo-out" class="hide"></div>
+    <p class="note">Recibo e orçamento não substituem a nota fiscal quando ela é obrigatória.</p>
+  </div>
+</section>
+</div>
+</main>
+
+<script>
+(function(){
+'use strict';
+var KEY='meifacil.v1';
+var SM=1621;                       // salário mínimo 2026 (R$)
+var LIMITE_ANO=81000, LIMITE_MES=6750;
+var ICMS=1, ISS=5;
+var $=function(id){return document.getElementById(id)};
+var brl=function(n){return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var num=function(s){s=String(s).trim().replace(/\s/g,'');if(s.indexOf(',')>-1)s=s.replace(/\./g,'').replace(',','.');var n=parseFloat(s);return isFinite(n)?n:NaN};
+var pad=function(n){return (n<10?'0':'')+n};
+var hojeISO=function(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var fmtData=function(iso){var p=iso.split('-');return p[2]+'/'+p[1]+'/'+p[0]};
+
+var S={perfil:null,lanc:[],das:{}};
+function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&typeof o==='object')S={perfil:o.perfil||null,lanc:Array.isArray(o.lanc)?o.lanc:[],das:o.das||{}}}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+function dasValor(){var a=S.perfil.ativ,inss=SM*0.05;
+  return inss+(a==='comercio'?ICMS:a==='servico'?ISS:ICMS+ISS)}
+
+// ---- cálculos ----
+function anoAtual(){return new Date().getFullYear()}
+function limiteDoAno(){
+  var ano=anoAtual(),ab=S.perfil.abertura.split('-').map(Number);
+  if(ab[0]===ano){return LIMITE_MES*(12-ab[1]+1)}   // proporcional ao mês de abertura (inclusive)
+  return LIMITE_ANO}
+function soma(tipo,filtro){return S.lanc.filter(function(l){return l.tipo===tipo&&filtro(l.data)}).reduce(function(a,l){return a+l.valor},0)}
+function mesAtualPref(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)}
+
+// ---- renderização ----
+function renderResumo(){
+  var ano=String(anoAtual()),fat=soma('rec',function(d){return d.slice(0,4)===ano}),lim=limiteDoAno(),pct=lim?fat/lim*100:0;
+  $('r-ano').textContent='('+ano+')';$('r-fat').textContent=brl(fat);
+  var bar=$('r-bar');bar.className='bar'+(pct>100?' bad':pct>=80?' warn':'');bar.firstElementChild.style.width=Math.min(pct,100)+'%';
+  $('r-lim').textContent=Math.round(pct)+'% do limite de '+brl(lim)+(lim<LIMITE_ANO?' (proporcional ao ano de abertura)':'')+' · restam '+brl(Math.max(lim-fat,0));
+  var al=$('r-alert');
+  if(fat>lim*1.2)al.innerHTML='<div class="alert bad"><b>Passou mais de 20% do limite.</b> Você será desenquadrado retroativamente a 1º de janeiro (ou da abertura). Fale com um contador.</div>';
+  else if(fat>lim)al.innerHTML='<div class="alert bad"><b>Limite ultrapassado.</b> Até 20% de excesso, o desenquadramento vale a partir do ano seguinte e há complemento de imposto. Procure um contador.</div>';
+  else if(pct>=80)al.innerHTML='<div class="alert warn"><b>Atenção:</b> você já usou mais de 80% do limite.</div>';
+  else al.innerHTML='<div class="alert ok">Dentro do limite do MEI.</div>';
+  var m=mesAtualPref(),rec=soma('rec',function(d){return d.slice(0,7)===m}),des=soma('des',function(d){return d.slice(0,7)===m});
+  $('r-mrec').textContent=brl(rec);$('r-mdes').textContent=brl(des);$('r-msob').textContent=brl(rec-des);
+  var meses=new Date().getMonth()+1,ab=S.perfil.abertura.split('-').map(Number);if(ab[0]===anoAtual())meses=meses-ab[1]+1;
+  $('r-med').textContent=brl(fat/Math.max(meses,1));
+  $('r-prox').innerHTML=proximo();
+}
+function dasLista(){ // competências da abertura até o mês atual (máx. 12 últimas)
+  var ab=S.perfil.abertura.split('-').map(Number),h=new Date(),out=[],y=ab[0],mo=ab[1];
+  while(y<h.getFullYear()||(y===h.getFullYear()&&mo<=h.getMonth()+1)){out.push(y+'-'+pad(mo));mo++;if(mo>12){mo=1;y++}}
+  return out.slice(-12).reverse()}
+function vencimento(comp){var p=comp.split('-').map(Number),y=p[0],m=p[1]+1;if(m>12){m=1;y++}return y+'-'+pad(m)+'-20'}
+function statusDas(comp){if(S.das[comp])return 'pago';var v=vencimento(comp),h=hojeISO();
+  if(v<h)return 'atraso';var dias=(new Date(v)-new Date(h))/864e5;return dias<=7?'breve':'aberto'}
+function proximo(){
+  var l=dasLista().filter(function(c){return !S.das[c]}).reverse();
+  var atraso=l.filter(function(c){return statusDas(c)==='atraso'});
+  var html='';
+  if(atraso.length)html+='<div class="alert bad">'+atraso.length+' DAS em atraso: '+atraso.map(compNome).join(', ')+'. Pague para evitar multa e juros.</div>';
+  var prox=l.filter(function(c){return statusDas(c)!=='atraso'})[0];
+  if(prox)html+='<p><b>DAS de '+compNome(prox)+'</b><br>vence em '+fmtData(vencimento(prox))+' · '+brl(dasValor())+'</p>';
+  var h=new Date(),ano=h.getFullYear(),dasn=h.getMonth()>=5?ano+1:ano;
+  html+='<p>Declaração anual (DASN-SIMEI): até 31/05/'+dasn+'.</p>';
+  return html}
+var MESES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function compNome(c){var p=c.split('-');return MESES[+p[1]-1]+'/'+p[0]}
+function renderLanc(){
+  var t=$('l-tab'),l=S.lanc.slice().sort(function(a,b){return a.data<b.data?1:-1});
+  if(!l.length){t.innerHTML='<tr><td>Nenhum lançamento ainda.</td></tr>';return}
+  t.innerHTML='<tr><th>Data</th><th>Descrição</th><th class="r">Valor</th><th></th></tr>'+l.map(function(x){
+    return '<tr><td>'+fmtData(x.data)+'</td><td>'+esc(x.desc||'—')+'</td><td class="r '+(x.tipo==='rec'?'in':'out')+'">'+(x.tipo==='rec'?'+':'−')+brl(x.valor)+'</td><td><button class="sm" data-del="'+x.id+'" aria-label="Apagar">×</button></td></tr>'}).join('')}
+function renderDas(){
+  $('d-info').textContent='Valor mensal estimado: '+brl(dasValor())+' (INSS de 5% do salário mínimo de '+brl(SM)+' + '+(S.perfil.ativ==='comercio'?'R$ 1 ICMS':S.perfil.ativ==='servico'?'R$ 5 ISS':'R$ 1 ICMS + R$ 5 ISS')+'). Confirme o valor exato na guia.';
+  $('d-list').innerHTML=dasLista().map(function(c){var s=statusDas(c);
+    var tag=s==='pago'?'<span class="tag okk">pago</span>':s==='atraso'?'<span class="tag late">em atraso</span>':s==='breve'?'<span class="tag soon">vence em breve</span>':'';
+    return '<div class="das"><label style="margin:0;display:flex;gap:8px;align-items:center;color:inherit;font-size:16px"><input type="checkbox" style="width:auto" data-das="'+c+'"'+(S.das[c]?' checked':'')+'> '+compNome(c)+' · vence '+fmtData(vencimento(c))+'</label>'+tag+'</div>'}).join('');
+  var h=new Date(),ano=h.getFullYear(),ab=S.perfil.abertura.split('-').map(Number);
+  var ref=h.getMonth()>=5?ano:ano-1;
+  $('d-dasn').innerHTML=ab[0]>ref?'<p>Seu MEI abriu em '+ab[0]+'. A primeira declaração é do ano de '+ab[0]+', com entrega até 31/05/'+(ab[0]+1)+'.</p>':'<p>Declaração referente a '+ref+': prazo 31/05/'+(ref+1)+'. Faturamento lançado em '+ref+': <b>'+brl(soma('rec',function(d){return d.slice(0,4)===String(ref)}))+'</b>.</p>'}
+function renderAll(){renderResumo();renderLanc();renderDas()}
+
+// ---- ações ----
+function show(){var has=!!S.perfil;$('setup').classList.toggle('hide',has);$('app').classList.toggle('hide',!has);if(has)renderAll()}
+$('s-ok').onclick=function(){var ab=$('s-abertura').value;if(!ab){alert('Informe a data de abertura.');return}
+  S.perfil={nome:$('s-nome').value.trim(),doc:$('s-doc').value.trim(),ativ:$('s-ativ').value,abertura:ab};save();show()};
+$('edit').onclick=function(){var p=S.perfil;$('s-nome').value=p.nome;$('s-doc').value=p.doc;$('s-ativ').value=p.ativ;$('s-abertura').value=p.abertura;S.perfil=null;show();S.perfil=p};
+$('reset').onclick=function(){if(confirm('Apagar todos os dados deste aparelho?')){S={perfil:null,lanc:[],das:{}};save();show()}};
+$('tabs').onclick=function(e){var t=e.target.getAttribute&&e.target.getAttribute('data-t');if(!t)return;
+  [].forEach.call($('tabs').children,function(b){b.classList.toggle('on',b===e.target)});
+  [].forEach.call(document.querySelectorAll('[data-p]'),function(s){s.classList.toggle('hide',s.getAttribute('data-p')!==t)})};
+$('l-data').value=hojeISO();
+$('l-add').onclick=function(){var v=num($('l-val').value),d=$('l-data').value;
+  if(!(v>0)||!d){alert('Informe uma data e um valor maior que zero.');return}
+  S.lanc.push({id:Date.now()+''+Math.floor(Math.random()*1e4),tipo:$('l-tipo').value,data:d,valor:Math.round(v*100)/100,desc:$('l-desc').value.trim()});
+  save();$('l-val').value='';$('l-desc').value='';renderAll()};
+$('l-tab').onclick=function(e){var id=e.target.getAttribute&&e.target.getAttribute('data-del');if(!id)return;S.lanc=S.lanc.filter(function(l){return l.id!==id});save();renderAll()};
+$('d-list').onchange=function(e){var c=e.target.getAttribute('data-das');if(!c)return;if(e.target.checked)S.das[c]=1;else delete S.das[c];save();renderAll()};
+$('l-csv').onclick=function(){var q=function(s){return '"'+String(s).replace(/"/g,'""').replace(/^([=+\-@])/,"'$1")+'"'};
+  var rows=['Data;Tipo;Valor;Descrição'].concat(S.lanc.slice().sort(function(a,b){return a.data<b.data?-1:1}).map(function(l){return [fmtData(l.data),l.tipo==='rec'?'Receita':'Despesa',String(l.valor).replace('.',','),q(l.desc)].join(';')}));
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+rows.join('\n')],{type:'text/csv;charset=utf-8'}));a.download='lancamentos-mei.csv';a.click()};
+var lastDoc=null;
+$('c-gen').onclick=function(){var v=num($('c-val').value);if(!(v>0)||!$('c-cli').value.trim()){alert('Informe o cliente e o valor.');return}
+  lastDoc={tipo:$('c-tipo').value,cli:$('c-cli').value.trim(),desc:$('c-desc').value.trim(),val:v};var p=S.perfil;
+  var o=$('recibo-out');o.classList.remove('hide');
+  o.innerHTML='<h2 style="text-align:center;margin:0 0 16px">'+esc(lastDoc.tipo.toUpperCase())+'</h2>'+
+   '<p><b>'+esc(p.nome||'Microempreendedor Individual')+'</b>'+(p.doc?'<br>CNPJ '+esc(p.doc):'')+'</p>'+
+   (lastDoc.tipo==='Recibo'?'<p>Recebi de <b>'+esc(lastDoc.cli)+'</b> a quantia de <b>'+brl(v)+'</b>'+(lastDoc.desc?', referente a: '+esc(lastDoc.desc):'')+'.</p>':
+   '<p>Cliente: <b>'+esc(lastDoc.cli)+'</b></p><p>'+esc(lastDoc.desc||'')+'</p><p>Valor total: <b>'+brl(v)+'</b></p><p style="font-size:13px">Orçamento válido por 7 dias.</p>')+
+   '<p style="margin-top:32px">Data: '+fmtData(hojeISO())+'</p><p style="margin-top:36px">______________________________<br>'+esc(p.nome||'')+'</p>';
+  $('c-print').classList.remove('hide');$('c-reg').classList.toggle('hide',lastDoc.tipo!=='Recibo')};
+$('c-print').onclick=function(){window.print()};
+$('c-reg').onclick=function(){if(!lastDoc)return;S.lanc.push({id:Date.now()+'r',tipo:'rec',data:hojeISO(),valor:Math.round(lastDoc.val*100)/100,desc:'Recibo – '+lastDoc.cli});save();renderAll();$('c-reg').classList.add('hide');alert('Lançado como receita.')};
+
+load();show();
+})();
+</script>
+</body>
+</html>
