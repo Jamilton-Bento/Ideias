@@ -29,3 +29,10 @@ Fontes são em grande parte blogs de vendors e afiliados; trate como direção, 
 1. Ler reviews de 1-2 estrelas dos concorrentes de cada nicho.
 2. Conversar com 5 pessoas do nicho escolhido antes de construir.
 3. Testar com uma página de captura e medir cadastros.
+
+## Mercado brasileiro (nov/2026)
+
+- **Assinaturas:** 46% pagam mais de R$ 100/mês somando tudo; 29% gastam R$ 101-200 e a faixa de R$ 201-500 subiu de 14% para 17% (Vindi/Opinion Box, 1.040 pessoas, jun-jul/2026). Streaming tem 79% de adoção. Não achei medição brasileira de assinaturas esquecidas (o dado de ~US$ 205/ano é dos EUA). Ver [Canaltech](https://canaltech.com.br/mercado/quase-50-dos-brasileiros-gastam-mais-de-r-100-com-assinaturas-por-mes/).
+- **Pix Automático:** lançado em jun/2025; o pagador pode cancelar a qualquer momento. Grandes marcas aderiram, mas os números de volume vêm de fontes secundárias. Ver [Let's Money](https://www.letsmoney.com.br/noticias/pix-automatico-1-ano-1-bilhao-mes/).
+- **Autônomos/MEI:** MEIs foram 77,3% dos pequenos negócios abertos entre jan e ago/2026 (Sebrae). Total de MEIs ativos: não confirmado em fonte primária. Ver [Agência Sebrae](https://agenciasebrae.com.br/dados/empreendedorismo-em-alta-abertura-de-novos-pequenos-negocios-cresce-14-em-2026/).
+- **Locação:** domicílios alugados subiram 54% entre 2016 e 2025, para 18,9 milhões (PNAD), e o aluguel sobe quase o dobro da inflação (FipeZAP). Não achei dados de pequenos proprietários nem de apps de manutenção. Ver [Forbes Brasil](https://forbes.com.br/forbes-money/forbes-real-estate/2026/08/fiis-residenciais-mercado-aluguel-private-equity/).
